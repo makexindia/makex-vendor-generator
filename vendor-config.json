@@ -35,5 +35,10 @@
   "hours": [
     "Mo-Su 10:00-20:00"
   ],
+  "policies": {
+    "returns": "We accept returns within 7 days of purchase with a valid receipt.",
+    "privacy": "We value your privacy. We do not sell or share your personal information.",
+    "terms": "By using our service, you agree to our terms and conditions."
+  },
   "currencySymbol": "₹"
 }

@@ -21,7 +21,4 @@ The generated sites act as "App Shells" that are deployed to Cloudflare R2 bucke
 ## Current Roadmap / Tasks for the AI Agent
 When requested, please assist the human developer with the following planned upgrades:
 
-
-
-**3. Policy Pages Strategy**
-* Implement a lightweight way to include basic Terms/Privacy/Returns policies (either as simple modal popups in Vanilla JS or appended static sections) without complicating the single-page architecture.
+

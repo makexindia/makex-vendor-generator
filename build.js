@@ -78,7 +78,42 @@ if (config.contact.whatsapp) {
                 </div>`;
 }
 
-// 3. Process HTML
+// 3. Process Policies
+let policyLinksHtml = '';
+let policyModalsHtml = '';
+
+if (config.policies) {
+    const policies = [
+        { id: 'returns', title: 'Returns Policy', content: config.policies.returns },
+        { id: 'privacy', title: 'Privacy Policy', content: config.policies.privacy },
+        { id: 'terms', title: 'Terms of Service', content: config.policies.terms }
+    ];
+
+    policies.forEach(p => {
+        if (p.content) {
+            policyLinksHtml += `<button onclick="openPolicyModal('${p.id}')" class="hover:text-brand-dark transition underline">${p.title}</button>`;
+            
+            policyModalsHtml += `
+            <div id="modal-${p.id}" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+                <div class="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-gray-800">${p.title}</h2>
+                        <button onclick="closePolicyModal('${p.id}')" class="text-gray-500 hover:text-gray-800 transition">
+                            <i class="fa-solid fa-xmark text-xl"></i>
+                        </button>
+                    </div>
+                    <div class="text-gray-600 text-sm whitespace-pre-wrap">${p.content}</div>
+                </div>
+            </div>`;
+        }
+    });
+
+    if (policyLinksHtml !== '') {
+        policyLinksHtml = `<div class="max-w-7xl mx-auto px-4 pb-6 flex flex-wrap justify-center gap-6 text-xs text-gray-400">${policyLinksHtml}</div>`;
+    }
+}
+
+// 4. Process HTML
 let html = fs.readFileSync(path.join(__dirname, 'template.html'), 'utf8');
 const replacements = {
     '__BUSINESS_NAME__': config.businessName,
@@ -98,6 +133,8 @@ const replacements = {
     '__HOURS__': config.hours ? config.hours.join(', ') : '',
     '__SOCIAL_HTML__': socialHtml,
     '__CONTACT_HTML__': contactHtml,
+    '__POLICY_LINKS__': policyLinksHtml,
+    '__POLICY_MODALS__': policyModalsHtml,
     '__LOCAL_BUSINESS_SCHEMA__': schemaString
 };
 

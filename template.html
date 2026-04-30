@@ -77,9 +77,31 @@
                 <div>© 2026 __BUSINESS_NAME__. All rights reserved.</div>
             </div>
         </div>
+        __POLICY_LINKS__
     </footer>
 
     <script>
+        // Logic: Modal Handling
+        function openPolicyModal(id) {
+            const modal = document.getElementById(`modal-${id}`);
+            if(modal) {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    modal.querySelector('div').classList.remove('scale-95');
+                }, 10);
+            }
+        }
+
+        function closePolicyModal(id) {
+            const modal = document.getElementById(`modal-${id}`);
+            if(modal) {
+                modal.classList.add('opacity-0');
+                modal.querySelector('div').classList.add('scale-95');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            }
+        }
+
         let catalogData = [];
         let cart = {}; // Tracks quantities: { "item-001": 2, "item-002": 1 }
 
@@ -221,5 +243,6 @@
 
         document.addEventListener('DOMContentLoaded', loadCatalog);
     </script>
+    __POLICY_MODALS__
 </body>
 </html>
