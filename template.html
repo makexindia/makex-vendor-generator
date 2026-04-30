@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>__BUSINESS_NAME__ | Makex Platform</title>
+
+    <meta name="description" content="__DESCRIPTION__">
+    
+    <meta property="og:type" content="business.business">
+    <meta property="og:title" content="__BUSINESS_NAME__">
+    <meta property="og:description" content="__SOCIAL_DESCRIPTION__">
+    <meta property="og:image" content="https://vendor.makex.in/makex.in/op-image.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="96x96" href="/makex.in/favicon-96x96.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/makex.in/site.webmanifest">
+
+    __LOCAL_BUSINESS_SCHEMA__
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = { theme: { extend: { colors: { brand: { light: '__THEME_LIGHT__', DEFAULT: '__THEME_PRIMARY__', dark: '__THEME_DARK__', accent: '__THEME_ACCENT__' } } } } }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-800 flex flex-col min-h-screen pb-24">
+
+    <nav class="bg-brand-light shadow-md fixed w-full z-10 top-0">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-20 items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-brand-dark text-white font-bold text-xl shadow-inner">
+                        __SHORT_NAME_INITIALS__
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-brand-dark leading-tight">__BUSINESS_NAME__</h1>
+                        <p class="text-xs text-brand-DEFAULT text-white drop-shadow-sm font-semibold">Powered by Makex</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow pt-28 max-w-7xl mx-auto px-4 w-full">
+        <div class="mb-8 text-center max-w-2xl mx-auto">
+            <p class="text-gray-600">__DESCRIPTION__</p>
+        </div>
+        <div id="catalog-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </main>
+
+    <div id="floating-cart" class="fixed bottom-0 w-full bg-brand-dark text-white p-4 shadow-[0_-8px_15px_-3px_rgba(0,0,0,0.2)] transform translate-y-full transition-transform duration-300 z-20 flex justify-between items-center hidden">
+        <div>
+            <p class="text-sm text-brand-light font-medium opacity-90">Total Order (<span id="cart-items-count">0</span> items)</p>
+            <p class="text-xl font-bold">__CURRENCY__<span id="cart-total">0</span></p>
+        </div>
+        <button onclick="sendOrderToWhatsApp()" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2.5 rounded-lg font-bold shadow-md transition flex items-center gap-2">
+            <i class="fa-brands fa-whatsapp text-xl"></i> Order via WhatsApp
+        </button>
+    </div>
+
+    <footer class="bg-white border-t border-gray-200 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 py-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-600">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-location-dot text-brand-DEFAULT"></i>
+                <a href="__GMAPS_LINK__" target="_blank" class="hover:text-brand-dark transition">__FULL_ADDRESS__</a>
+            </div>
+            <div>© 2026 __BUSINESS_NAME__. All rights reserved.</div>
+        </div>
+    </footer>
+
+    <script>
+        let catalogData = [];
+        let cart = {}; // Tracks quantities: { "item-001": 2, "item-002": 1 }
+
+        async function loadCatalog() {
+            try {
+                const response = await fetch('catalog.json');
+                catalogData = await response.json();
+                renderCatalog();
+            } catch (error) { 
+                console.error("Failed to load catalog", error); 
+            }
+        }
+
+        function renderCatalog() {
+            const container = document.getElementById('catalog-container');
+            container.innerHTML = catalogData.map(item => `
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex gap-4 hover:shadow-md transition">
+                    <img src="${item.image}" onerror="this.onerror=null; this.src='https://placehold.co/400x400/eeeeee/999999?text=No+Image';" class="w-24 h-24 object-cover rounded-lg bg-gray-50 border border-gray-100">
+                    <div class="flex flex-col justify-between flex-1">
+                        <div>
+                            <h3 class="font-bold text-gray-800 leading-tight">${item.name}</h3>
+                            <p class="text-brand-dark font-bold text-lg mt-1">__CURRENCY__${item.price}</p>
+                        </div>
+                        <div id="control-${item.id}" class="mt-2 h-9 flex items-end">
+                            </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Initialize UI for all items
+            catalogData.forEach(item => updateItemUI(item.id));
+        }
+
+        // Logic: Add or Subtract quantity
+        function updateCart(itemId, change) {
+            if (!cart[itemId]) cart[itemId] = 0;
+            cart[itemId] += change;
+            if (cart[itemId] < 0) cart[itemId] = 0; // Prevent negative quantities
+            
+            updateItemUI(itemId);
+            updateCartUI();
+        }
+
+        // Logic: Render the specific Add / +/- button state
+        function updateItemUI(itemId) {
+            const container = document.getElementById(`control-${itemId}`);
+            if (!container) return;
+
+            const qty = cart[itemId] || 0;
+
+            if (qty === 0) {
+                // Show standard "Add" button
+                container.innerHTML = `
+                    <button onclick="updateCart('${itemId}', 1)" class="bg-white border border-brand-DEFAULT text-brand-dark px-4 py-1.5 rounded-md hover:bg-brand-light hover:text-brand-dark text-sm font-bold transition w-full shadow-sm">
+                        ADD
+                    </button>
+                `;
+            } else {
+                // Show " - | QTY | + " controller
+                container.innerHTML = `
+                    <div class="flex items-center justify-between w-full bg-brand-light rounded-md overflow-hidden border border-brand-DEFAULT shadow-sm">
+                        <button onclick="updateCart('${itemId}', -1)" class="w-10 h-8 text-brand-dark hover:bg-white transition font-bold text-lg flex items-center justify-center">−</button>
+                        <span class="font-bold text-brand-dark text-sm">${qty}</span>
+                        <button onclick="updateCart('${itemId}', 1)" class="w-10 h-8 text-brand-dark hover:bg-white transition font-bold text-lg flex items-center justify-center">+</button>
+                    </div>
+                `;
+            }
+        }
+
+        // Logic: Update bottom floating bar
+        function updateCartUI() {
+            let total = 0;
+            let totalItems = 0;
+
+            for (const [id, qty] of Object.entries(cart)) {
+                if (qty > 0) {
+                    const item = catalogData.find(i => i.id === id);
+                    if (item) {
+                        total += item.price * qty;
+                        totalItems += qty;
+                    }
+                }
+            }
+
+            const cartBar = document.getElementById('floating-cart');
+            document.getElementById('cart-total').innerText = total;
+            document.getElementById('cart-items-count').innerText = totalItems;
+
+            if (totalItems > 0) {
+                cartBar.classList.remove('hidden');
+                // Small delay to allow display:block to apply before animating transform
+                setTimeout(() => cartBar.classList.remove('translate-y-full'), 10);
+            } else {
+                cartBar.classList.add('translate-y-full');
+                setTimeout(() => cartBar.classList.add('hidden'), 300);
+            }
+        }
+
+        // Logic: Compile order and redirect to WhatsApp
+        function sendOrderToWhatsApp() {
+            let orderText = "__WHATSAPP_MSG__\n\n";
+            let total = 0;
+
+            for (const [id, qty] of Object.entries(cart)) {
+                if (qty > 0) {
+                    const item = catalogData.find(i => i.id === id);
+                    orderText += `▪ ${qty}x ${item.name} - __CURRENCY__${item.price * qty}\n`;
+                    total += item.price * qty;
+                }
+            }
+            
+            orderText += `\n*Total: __CURRENCY__${total}*`;
+            
+            const whatsappUrl = `https://wa.me/__WHATSAPP_CLEAN__?text=${encodeURIComponent(orderText)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        document.addEventListener('DOMContentLoaded', loadCatalog);
+    </script>
+</body>
+</html>

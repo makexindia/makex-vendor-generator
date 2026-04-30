@@ -1,0 +1,33 @@
+{
+  "vendorId": "vishalelectronics",
+  "businessName": "Vishal Electronics",
+  "shortName": "Vishal",
+  "category": "ElectronicsStore",
+  "description": "Your trusted source for premium home appliances, electronics, and tech accessories.",
+  "socialDescription": "Shop the latest electronics and home appliances locally at Vishal Electronics in Muzaffarnagar.",
+  "theme": {
+    "primary": "#2563eb",
+    "dark": "#1e40af",
+    "light": "#dbeafe",
+    "accent": "#ea580c"
+  },
+  "contact": {
+    "phone": "+919876543210",
+    "whatsapp": "919876543210",
+    "whatsappMessage": "Hello! I would like to inquire about an item:"
+  },
+  "location": {
+    "street": "123 Main Market Road",
+    "city": "Muzaffarnagar",
+    "state": "Uttar Pradesh",
+    "zip": "251001",
+    "country": "IN",
+    "lat": "29.4727",
+    "lng": "77.7085",
+    "gmapsLink": "https://maps.google.com/?cid=YOUR_GBP_CID"
+  },
+  "hours": [
+    "Mo-Su 10:00-20:00"
+  ],
+  "currencySymbol": "₹"
+}
