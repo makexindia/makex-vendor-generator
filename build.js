@@ -18,13 +18,15 @@ if (!fs.existsSync(vendorDir)) fs.mkdirSync(vendorDir);
 if (!fs.existsSync(path.join(vendorDir, 'images'))) fs.mkdirSync(path.join(vendorDir, 'images'));
 
 // 1. Generate LocalBusiness JSON-LD Schema
+const vanityUrl = `https://biz${config.shortName.toLowerCase().replace(/[^a-z0-9]/g, '')}.makex.in`;
+
 const schema = {
     "@context": "https://schema.org",
     "@type": config.category || "LocalBusiness",
     "name": config.businessName,
     "image": "https://vendor.makex.in/makex.in/op-image.jpg", // FIXED: Master folder path
     "telephone": config.contact.phone,
-    "url": `https://biz${config.shortName.toLowerCase().replace(/[^a-z0-9]/g, '')}.makex.in`,
+    "url": vanityUrl,
     "address": {
         "@type": "PostalAddress",
         "streetAddress": config.location.street,
@@ -94,8 +96,8 @@ if (config.policies) {
             policyLinksHtml += `<button onclick="openPolicyModal('${p.id}')" class="hover:text-brand-dark transition underline">${p.title}</button>`;
             
             policyModalsHtml += `
-            <div id="modal-${p.id}" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-                <div class="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto">
+            <div id="modal-${p.id}" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300 cursor-pointer" onclick="closePolicyModal('${p.id}')">
+                <div class="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto cursor-default" onclick="event.stopPropagation()">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-bold text-gray-800">${p.title}</h2>
                         <button onclick="closePolicyModal('${p.id}')" class="text-gray-500 hover:text-gray-800 transition">
@@ -135,6 +137,7 @@ const replacements = {
     '__CONTACT_HTML__': contactHtml,
     '__POLICY_LINKS__': policyLinksHtml,
     '__POLICY_MODALS__': policyModalsHtml,
+    '__VANITY_URL__': vanityUrl,
     '__LOCAL_BUSINESS_SCHEMA__': schemaString
 };
 

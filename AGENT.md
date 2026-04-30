@@ -18,7 +18,9 @@ The generated sites act as "App Shells" that are deployed to Cloudflare R2 bucke
 * `build.js`: The Node script that reads the config, replaces placeholders in the template, generates JSON-LD LocalBusiness schema, and outputs the final deployment folder.
 * `Dockerfile`: Containerizes the generator so volunteers can run it without installing Node.js.
 
-## Current Roadmap / Tasks for the AI Agent
-When requested, please assist the human developer with the following planned upgrades:
+## UI & UX Standards
+* Modals must always support 'click outside to close' using event propagation stopping.
+* Badges or tags next to dynamic text must use `flex-shrink-0` to prevent layout breaking.
 
-
+## SEO Standards
+* All generated templates must include canonical links and og:url tags mapped to the correct vanity domain.
