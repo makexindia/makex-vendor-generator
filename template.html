@@ -88,11 +88,14 @@
         function renderCatalog() {
             const container = document.getElementById('catalog-container');
             container.innerHTML = catalogData.map(item => `
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex gap-4 hover:shadow-md transition">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex gap-4 hover:shadow-md transition relative overflow-hidden">
                     <img src="${item.image}" onerror="this.onerror=null; this.src='https://placehold.co/400x400/eeeeee/999999?text=No+Image';" class="w-24 h-24 object-cover rounded-lg bg-gray-50 border border-gray-100">
                     <div class="flex flex-col justify-between flex-1">
                         <div>
-                            <h3 class="font-bold text-gray-800 leading-tight">${item.name}</h3>
+                            <div class="flex justify-between items-start gap-2">
+                                <h3 class="font-bold text-gray-800 leading-tight">${item.name}</h3>
+                                ${item.inStock === false ? '<span class="px-2 py-0.5 bg-yellow-100 text-yellow-800 text-[10px] uppercase font-bold rounded whitespace-nowrap">Out of Stock</span>' : ''}
+                            </div>
                             <p class="text-brand-dark font-bold text-lg mt-1">__CURRENCY__${item.price}</p>
                         </div>
                         <div id="control-${item.id}" class="mt-2 h-9 flex items-end">
@@ -150,7 +153,9 @@
                 if (qty > 0) {
                     const item = catalogData.find(i => i.id === id);
                     if (item) {
-                        total += item.price * qty;
+                        if (item.inStock !== false) {
+                            total += item.price * qty;
+                        }
                         totalItems += qty;
                     }
                 }
@@ -172,20 +177,37 @@
 
         // Logic: Compile order and redirect to WhatsApp
         function sendOrderToWhatsApp() {
-            let orderText = "__WHATSAPP_MSG__\n\n";
+            let availableText = "*Available Items*\n";
+            let backorderText = "\n*Interest / Backorder*\n";
+            let hasAvailable = false;
+            let hasBackorder = false;
             let total = 0;
 
             for (const [id, qty] of Object.entries(cart)) {
                 if (qty > 0) {
                     const item = catalogData.find(i => i.id === id);
-                    orderText += `▪ ${qty}x ${item.name} - __CURRENCY__${item.price * qty}\n`;
-                    total += item.price * qty;
+                    if (item) {
+                        if (item.inStock !== false) {
+                            availableText += `▪ ${qty}x ${item.name} - __CURRENCY__${item.price * qty}\n`;
+                            total += item.price * qty;
+                            hasAvailable = true;
+                        } else {
+                            backorderText += `▪ ${qty}x ${item.name}\n`;
+                            hasBackorder = true;
+                        }
+                    }
                 }
             }
             
-            orderText += `\n*Total: __CURRENCY__${total}*`;
+            let orderText = "__WHATSAPP_MSG__\n\n";
+            if (hasAvailable) {
+                orderText += availableText + `\n*Total: __CURRENCY__${total}*\n`;
+            }
+            if (hasBackorder) {
+                orderText += backorderText;
+            }
             
-            const whatsappUrl = `https://wa.me/__WHATSAPP_CLEAN__?text=${encodeURIComponent(orderText)}`;
+            const whatsappUrl = `https://wa.me/__WHATSAPP_CLEAN__?text=${encodeURIComponent(orderText.trim())}`;
             window.open(whatsappUrl, '_blank');
         }
 

@@ -76,9 +76,17 @@ fs.writeFileSync(path.join(vendorDir, 'index.html'), html);
 const emptyCatalog = [{
     "id": "sample-01",
     "name": "Upload your first item!",
-    "price": 0,
+    "price": 2,
     "image": "/makex.in/default-product.png", // FIXED: Master folder path
     "inStock": true,
+    "tags": []
+},
+{
+    "id": "sample-02",
+    "name": "Upload your second item!",
+    "price": 1,
+    "image": "/makex.in/default-product.png",
+    "inStock": false,
     "tags": []
 }];
 
