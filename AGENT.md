@@ -21,19 +21,7 @@ The generated sites act as "App Shells" that are deployed to Cloudflare R2 bucke
 ## Current Roadmap / Tasks for the AI Agent
 When requested, please assist the human developer with the following planned upgrades:
 
-**1. Smart "Out of Stock" Handling (Lead Gen)**
-* **Goal:** Do not block users from adding `inStock: false` items. 
-* **UI:** Add a visual badge (e.g., "Out of Stock" or "Pre-order") to the product card in `template.html` if `item.inStock` is false.
-* **Logic:** Modify the `sendOrderToWhatsApp()` JS function. It should group the final message into two sections: 
-  - "Available Items" (Total: ₹X)
-  - "Interest / Backorder" (For out-of-stock items, not added to the immediate total).
 
-**2. Closing the UX Gaps (Rich Footer & Header)**
-* **Config:** Expand `vendor-config.json` to accept `email`, `socialLinks` (Instagram, Facebook), and `logoUrl`.
-* **Builder:** Update `build.js` to process these new fields.
-* **UI:** - Update `template.html` footer to display Business Hours (parsed from config).
-  - Add clickable icons for Email and Social Media in the footer.
-  - Upgrade the Header Nav to conditionally render an `<img src="logoUrl">` if provided, falling back to the current CSS-text initials if null.
 
 **3. Policy Pages Strategy**
 * Implement a lightweight way to include basic Terms/Privacy/Returns policies (either as simple modal popups in Vanilla JS or appended static sections) without complicating the single-page architecture.

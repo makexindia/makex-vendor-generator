@@ -32,9 +32,7 @@
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between h-20 items-center">
                 <div class="flex items-center space-x-3">
-                    <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-brand-dark text-white font-bold text-xl shadow-inner">
-                        __SHORT_NAME_INITIALS__
-                    </div>
+                    __LOGO_HTML__
                     <div>
                         <h1 class="text-xl font-bold text-brand-dark leading-tight">__BUSINESS_NAME__</h1>
                         <p class="text-xs text-brand-DEFAULT text-white drop-shadow-sm font-semibold">Powered by Makex</p>
@@ -63,11 +61,21 @@
 
     <footer class="bg-white border-t border-gray-200 mt-auto">
         <div class="max-w-7xl mx-auto px-4 py-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-600">
-            <div class="flex items-center gap-2">
-                <i class="fa-solid fa-location-dot text-brand-DEFAULT"></i>
-                <a href="__GMAPS_LINK__" target="_blank" class="hover:text-brand-dark transition">__FULL_ADDRESS__</a>
+            <div class="flex flex-col gap-2">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-location-dot text-brand-DEFAULT w-4 text-center"></i>
+                    <a href="__GMAPS_LINK__" target="_blank" class="hover:text-brand-dark transition">__FULL_ADDRESS__</a>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-clock text-brand-DEFAULT w-4 text-center"></i>
+                    <span>__HOURS__</span>
+                </div>
+                __CONTACT_HTML__
             </div>
-            <div>© 2026 __BUSINESS_NAME__. All rights reserved.</div>
+            <div class="flex flex-col items-center md:items-end gap-2">
+                __SOCIAL_HTML__
+                <div>© 2026 __BUSINESS_NAME__. All rights reserved.</div>
+            </div>
         </div>
     </footer>
 

@@ -46,11 +46,43 @@ const schemaString = `<script type="application/ld+json">\n${JSON.stringify(sche
 const initials = config.businessName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 const fullAddress = `${config.location.street}, ${config.location.city}, ${config.location.zip}`;
 
+const logoHtml = config.logoUrl 
+    ? `<img src="${config.logoUrl}" alt="${config.businessName} Logo" class="w-12 h-12 rounded-lg object-contain bg-white shadow-sm border border-gray-100">`
+    : `<div class="flex items-center justify-center w-12 h-12 rounded-lg bg-brand-dark text-white font-bold text-xl shadow-inner">${initials}</div>`;
+
+let socialHtml = '';
+if (config.contact.email) {
+    socialHtml += `<a href="mailto:${config.contact.email}" class="hover:text-brand-dark transition"><i class="fa-solid fa-envelope text-xl"></i></a>`;
+}
+if (config.socialLinks?.instagram) {
+    socialHtml += `<a href="${config.socialLinks.instagram}" target="_blank" class="hover:text-pink-600 transition"><i class="fa-brands fa-instagram text-xl"></i></a>`;
+}
+if (config.socialLinks?.facebook) {
+    socialHtml += `<a href="${config.socialLinks.facebook}" target="_blank" class="hover:text-blue-600 transition"><i class="fa-brands fa-facebook text-xl"></i></a>`;
+}
+if (socialHtml !== '') {
+    socialHtml = `<div class="flex items-center gap-4 mt-2 md:mt-0">${socialHtml}</div>`;
+}
+
+let contactHtml = '';
+if (config.contact.phone) {
+    contactHtml += `<div class="flex items-center gap-2">
+                    <i class="fa-solid fa-phone text-brand-DEFAULT w-4 text-center"></i>
+                    <a href="tel:${config.contact.phone.replace(/[^0-9]/g, '')}" class="hover:text-brand-dark transition">${config.contact.phone}</a>
+                </div>`;
+}
+if (config.contact.whatsapp) {
+    contactHtml += `<div class="flex items-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-brand-DEFAULT w-4 text-center"></i>
+                    <a href="https://wa.me/${config.contact.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" class="hover:text-green-600 transition">+${config.contact.whatsapp.replace(/[^0-9]/g, '')}</a>
+                </div>`;
+}
+
 // 3. Process HTML
 let html = fs.readFileSync(path.join(__dirname, 'template.html'), 'utf8');
 const replacements = {
     '__BUSINESS_NAME__': config.businessName,
-    '__SHORT_NAME_INITIALS__': initials,
+    '__LOGO_HTML__': logoHtml,
     '__DESCRIPTION__': config.description,
     '__SOCIAL_DESCRIPTION__': config.socialDescription,
     '__THEME_PRIMARY__': config.theme.primary,
@@ -58,11 +90,14 @@ const replacements = {
     '__THEME_LIGHT__': config.theme.light,
     '__THEME_ACCENT__': config.theme.accent,
     '__CURRENCY__': config.currencySymbol,
-    '__PHONE_CLEAN__': config.contact.phone.replace(/\D/g, ''),
-    '__WHATSAPP_CLEAN__': config.contact.whatsapp.replace(/\D/g, ''),
+    '__PHONE_CLEAN__': config.contact.phone.replace(/[^0-9]/g, ''),
+    '__WHATSAPP_CLEAN__': config.contact.whatsapp.replace(/[^0-9]/g, ''),
     '__WHATSAPP_MSG__': config.contact.whatsappMessage,
     '__FULL_ADDRESS__': fullAddress,
     '__GMAPS_LINK__': config.location.gmapsLink || '#',
+    '__HOURS__': config.hours ? config.hours.join(', ') : '',
+    '__SOCIAL_HTML__': socialHtml,
+    '__CONTACT_HTML__': contactHtml,
     '__LOCAL_BUSINESS_SCHEMA__': schemaString
 };
 
