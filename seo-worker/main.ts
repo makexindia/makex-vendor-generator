@@ -84,12 +84,19 @@ Deno.serve(async (req) => {
 
     // Clean up Cloudflare auto-injected scripts from the fetched HTML
     // This regex matches and removes any <script> tags containing cdn-cgi or cloudflareinsights
-    html = html.replace(/<script[^>]*src=["'][^"']*(cdn-cgi|cloudflareinsights)[^"']*["'][^>]*>[\s\S]*?<\/script>/gi, '');
+    html = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, (match) => {
+        if (match.includes('cdn-cgi') || match.includes('cloudflareinsights')) {
+            return ''; // Strip it!
+        }
+        return match; // Keep it
+    });
 
     // 6. Build the injection payload
     const injection = `
-        <base href="https://vendor.makex.in/${bucketFolder}/">
-        <script>window.__TARGET_ITEM_ID__ = "${itemId}";</script>
+        <script>
+            window.__TARGET_ITEM_ID__ = "${itemId}";
+            window.__ASSET_BASE__ = "https://vendor.makex.in/${bucketFolder}/";
+        </script>
         <script type="application/ld+json">
         {
           "@context": "https://schema.org/",
