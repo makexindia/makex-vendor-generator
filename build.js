@@ -13,6 +13,18 @@ if (!fs.existsSync(configPath)) {
 const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 const vendorDir = path.join(WORKSPACE, `${config.vendorId}.makex.in`);
 
+const CDN_BASE = 'https://vendor.makex.in';
+
+// URL Formatting Helper
+function formatImageUrl(url) {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    if (url.startsWith('/makex.in/')) return `${CDN_BASE}${url}`;
+    
+    const cleanUrl = url.startsWith('/') ? url.slice(1) : url;
+    return `${CDN_BASE}/${config.vendorId}.makex.in/${cleanUrl}`;
+}
+
 // Ensure directories exist
 if (!fs.existsSync(vendorDir)) fs.mkdirSync(vendorDir);
 if (!fs.existsSync(path.join(vendorDir, 'images'))) fs.mkdirSync(path.join(vendorDir, 'images'));
@@ -139,7 +151,7 @@ const replacements = {
     '__POLICY_MODALS__': policyModalsHtml,
     '__VANITY_URL__': vanityUrl,
     '__LOCAL_BUSINESS_SCHEMA__': schemaString,
-    '__CDN_BASE__': 'https://vendor.makex.in'
+    '__CDN_BASE__': CDN_BASE
 };
 
 for (const [key, value] of Object.entries(replacements)) {
@@ -153,7 +165,7 @@ const emptyCatalog = [{
     "id": "sample-01",
     "name": "Upload your first item!",
     "price": 2,
-    "image": "/makex.in/default-product.png", // FIXED: Master folder path
+    "image": formatImageUrl("/makex.in/default-product.png"), // FIXED: Master folder path
     "inStock": true,
     "tags": []
 },
@@ -161,7 +173,7 @@ const emptyCatalog = [{
     "id": "sample-02",
     "name": "Upload your second item!",
     "price": 1,
-    "image": "/makex.in/default-product.png",
+    "image": formatImageUrl("/makex.in/default-product.png"),
     "inStock": false,
     "tags": []
 }];
