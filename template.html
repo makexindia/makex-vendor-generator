@@ -120,7 +120,7 @@
         function renderCatalog() {
             const container = document.getElementById('catalog-container');
             container.innerHTML = catalogData.map(item => `
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex gap-4 hover:shadow-md transition relative overflow-hidden">
+                <div id="product-card-${item.id}" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex gap-4 hover:shadow-md transition duration-300 relative overflow-hidden">
                     <img src="${item.image}" onerror="this.onerror=null; this.src='https://placehold.co/400x400/eeeeee/999999?text=No+Image';" class="w-24 h-24 object-cover rounded-lg bg-gray-50 border border-gray-100">
                     <div class="flex flex-col justify-between flex-1">
                         <div>
@@ -138,6 +138,14 @@
 
             // Initialize UI for all items
             catalogData.forEach(item => updateItemUI(item.id));
+
+            if (window.__TARGET_ITEM_ID__) {
+                const targetCard = document.getElementById(`product-card-${window.__TARGET_ITEM_ID__}`);
+                if (targetCard) {
+                    targetCard.classList.add('ring-4', 'ring-brand-DEFAULT', 'ring-opacity-50', 'transform', 'scale-[1.02]');
+                    setTimeout(() => targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+                }
+            }
         }
 
         // Logic: Add or Subtract quantity

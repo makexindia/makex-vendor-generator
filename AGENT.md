@@ -24,3 +24,20 @@ The generated sites act as "App Shells" that are deployed to Cloudflare R2 bucke
 
 ## SEO Standards
 * All generated templates must include canonical links and og:url tags mapped to the correct vanity domain.
+
+## Edge Routing & SEO Constraints
+1. **Compute Isolation**: The Deno SEO worker runs on a separate isolated domain (`item.makex.in`) due to Free Tier limitations, completely independent of the vanity domains or the R2 storage domains.
+2. **Proxy vs Redirect**: The SEO worker MUST NOT use HTTP redirects. It must act as a proxy by fetching the vendor's static `index.html`, injecting product-specific JSON-LD schemas, and returning a `200 OK`.
+3. **Base Tag Anchoring**: Because the proxy serves HTML from a different domain and path structure, the worker MUST inject a `<base href="...">` tag pointing to the vendor's R2 bucket root to prevent relative asset paths (CSS, JS, images) from breaking.
+4. **Crawler Discovery**: Product links (`item.makex.in/...`) are provided to crawlers via a `<noscript>` list of `<a>` tags injected into the static `index.html` at build time.
+
+## Backlog
+**1. CSV-to-Catalog Pipeline**
+* Create a new script in the build pipeline that reads a `catalog.csv` file and converts it into the `catalog.json` format used by the frontend.
+* During `build.js`, generate a `<noscript>` block containing direct `<a>` tags pointing to the `item.makex.in` URLs for every product.
+* Inject this `<noscript>` block into `index.html`. This ensures Googlebot can crawl and discover all individual product pages without needing an XML sitemap, while remaining invisible to human users.
+
+**2. Vanilla JS Fuzzy Search**
+* Add a search input field to the sticky Header Nav in `template.html`.
+* Implement a lightweight, Vanilla JS fuzzy search function that filters the `catalogData` array in memory.
+* Re-trigger `renderCatalog()` with the filtered results as the user types, ensuring instant feedback without network requests.
