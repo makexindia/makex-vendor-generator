@@ -82,6 +82,10 @@ Deno.serve(async (req) => {
     }
     let html = await indexRes.text();
 
+    // Clean up Cloudflare auto-injected scripts from the fetched HTML
+    // This regex matches and removes any <script> tags containing cdn-cgi or cloudflareinsights
+    html = html.replace(/<script[^>]*src=["'][^"']*(cdn-cgi|cloudflareinsights)[^"']*["'][^>]*>[\s\S]*?<\/script>/gi, '');
+
     // 6. Build the injection payload
     const injection = `
         <base href="https://vendor.makex.in/${bucketFolder}/">

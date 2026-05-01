@@ -138,7 +138,8 @@ const replacements = {
     '__POLICY_LINKS__': policyLinksHtml,
     '__POLICY_MODALS__': policyModalsHtml,
     '__VANITY_URL__': vanityUrl,
-    '__LOCAL_BUSINESS_SCHEMA__': schemaString
+    '__LOCAL_BUSINESS_SCHEMA__': schemaString,
+    '__CDN_BASE__': 'https://vendor.makex.in'
 };
 
 for (const [key, value] of Object.entries(replacements)) {
