@@ -30,7 +30,7 @@ if (!fs.existsSync(vendorDir)) fs.mkdirSync(vendorDir);
 if (!fs.existsSync(path.join(vendorDir, 'images'))) fs.mkdirSync(path.join(vendorDir, 'images'));
 
 // 1. Generate LocalBusiness JSON-LD Schema
-const vanityUrl = `https://biz${config.shortName.toLowerCase().replace(/[^a-z0-9]/g, '')}.makex.in`;
+const vanityUrl = `https://biz${config.vendorId.toLowerCase().replace(/[^a-z0-9]/g, '')}.makex.in`;
 
 const schema = {
     "@context": "https://schema.org",

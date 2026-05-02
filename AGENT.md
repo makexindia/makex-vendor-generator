@@ -11,33 +11,38 @@ The generated sites act as "App Shells" that are deployed to Cloudflare R2 bucke
 2. **Vanilla JS & CDN Tailwind:** The frontend uses CDN-based Tailwind CSS and Vanilla JavaScript. Do NOT initialize npm, Webpack, React, or Vue in the template. 
 3. **Data Separation (App Shell):** The `index.html` file must remain "dumb". It loads inventory dynamically from `catalog.json` at runtime. Do NOT bake product arrays directly into the HTML.
 4. **Cloudflare & Edge SEO:** The architecture relies on Cloudflare's edge caching and a Deno worker for SEO routing. Do not change the file naming conventions (`index.html`, `catalog.json`).
+5. **Absolute Data URIs:** To avoid cross-domain routing errors, `catalog.json` must strictly contain absolute URLs. `build.js` manages this via a `formatImageUrl()` helper that interpolates URLs against the `CDN_BASE` constant at build time. 
+
+## Edge Routing & App Shell Proxy
+1. **Compute Isolation**: The Deno SEO worker runs on an isolated domain (`item.makex.in`) due to Cloudflare Free Tier limitations, completely independent of the vanity domains or R2 storage domains.
+2. **Proxy vs Redirect**: The SEO worker MUST NOT use HTTP redirects. It acts as an **App Shell Proxy**, fetching the vendor's static `index.html` from R2, injecting product-specific JSON-LD schemas and `window.__TARGET_ITEM_ID__`, and returning a `200 OK`.
+3. **Double Injection Prevention**: Cloudflare natively injects bot/analytics scripts into R2 HTML. To prevent double-injection and CORS errors when proxying, the `seo-worker` aggressively strips upstream `cdn-cgi` scripts using a multi-line Javascript Replacer function before returning the payload.
+4. **The Edge Network Paradox (No Base Tags)**: To prevent hijacking Cloudflare's outbound edge scripts, we explicitly DO NOT use HTML `<base>` tags. Instead, the SEO worker injects a `window.__ASSET_BASE__` JS variable. The frontend Vanilla JS uses this variable to dynamically resolve relative fetches (like `catalog.json`), completely decoupling the Document Base from the Asset Base.
 
 ## Core Files
-* `vendor-config.json`: The single source of truth for a vendor's details (Theme, NAP details, WhatsApp numbers).
+* `vendor-config.json`: The single source of truth for a vendor's details. Uses `vendorId` to dictate the bucket path and the vanity domain routing.
 * `template.html`: The base HTML shell. Contains placeholder tags (e.g., `__BUSINESS_NAME__`) and the Vanilla JS shopping cart logic.
-* `build.js`: The Node script that reads the config, replaces placeholders in the template, generates JSON-LD LocalBusiness schema, and outputs the final deployment folder.
-* `Dockerfile`: Containerizes the generator so volunteers can run it without installing Node.js.
+* `build.js`: The Node script that reads the config, enforces absolute URLs, replaces placeholders, generates JSON-LD LocalBusiness schema, and outputs the final deployment folder.
+* `seo-worker/main.ts`: The Deno proxy script that intercepts individual product links for SEO indexing.
 
-## UI & UX Standards
-* Modals must always support 'click outside to close' using event propagation stopping.
-* Badges or tags next to dynamic text must use `flex-shrink-0` to prevent layout breaking.
+## Current Backlog (Prioritized)
 
-## SEO Standards
-* All generated templates must include canonical links and og:url tags mapped to the correct vanity domain.
+### 1. Dynamic OG Images for Vendors (`og-worker`)
+* **Goal**: An edge-generated, CDN-cached custom Open Graph image for every vendor for WhatsApp sharing.
+* **Architecture**: Create an isolated Cloudflare/Deno worker (e.g. `og.makex.in/?vendor=ve`) that fetches a base background template (`op-image.jpg`), overlays the specific vendor's business name text + Makex watermark using SVG/Canvas, and returns the image.
+* **Caching**: Must use aggressive Cache-Control headers (`s-maxage=2592000`) to protect Free Tier limits.
 
-## Edge Routing & SEO Constraints
-1. **Compute Isolation**: The Deno SEO worker runs on a separate isolated domain (`item.makex.in`) due to Free Tier limitations, completely independent of the vanity domains or the R2 storage domains.
-2. **Proxy vs Redirect**: The SEO worker MUST NOT use HTTP redirects. It must act as a proxy by fetching the vendor's static `index.html`, injecting product-specific JSON-LD schemas, and returning a `200 OK`.
-3. **Base Tag Anchoring**: Because the proxy serves HTML from a different domain and path structure, the worker MUST inject a `<base href="...">` tag pointing to the vendor's R2 bucket root to prevent relative asset paths (CSS, JS, images) from breaking.
-4. **Crawler Discovery**: Product links (`item.makex.in/...`) are provided to crawlers via a `<noscript>` list of `<a>` tags injected into the static `index.html` at build time.
+### 2. CSV-to-Catalog Pipeline
+* **Goal**: Convert human-readable CSVs into `catalog.json` and build a `<noscript>` crawler discovery block.
+* **Architecture**: Create a script to parse `catalog.csv`. Use `formatImageUrl()` from `build.js` to ensure all image paths are absolute. 
+* **SEO**: Inject a `<noscript>` list of direct `<a>` tags pointing to `item.makex.in` URLs for every product into `index.html` during the build step.
 
-## Backlog
-**1. CSV-to-Catalog Pipeline**
-* Create a new script in the build pipeline that reads a `catalog.csv` file and converts it into the `catalog.json` format used by the frontend.
-* During `build.js`, generate a `<noscript>` block containing direct `<a>` tags pointing to the `item.makex.in` URLs for every product.
-* Inject this `<noscript>` block into `index.html`. This ensures Googlebot can crawl and discover all individual product pages without needing an XML sitemap, while remaining invisible to human users.
+### 3. Vanilla JS Fuzzy Search
+* **Goal**: Instant catalog filtering.
+* **Architecture**: Add a search input field to the header. Implement lightweight fuzzy filtering on the `catalogData` array in memory, and re-trigger `renderCatalog()`.
 
-**2. Vanilla JS Fuzzy Search**
-* Add a search input field to the sticky Header Nav in `template.html`.
-* Implement a lightweight, Vanilla JS fuzzy search function that filters the `catalogData` array in memory.
-* Re-trigger `renderCatalog()` with the filtered results as the user types, ensuring instant feedback without network requests.
+## Brainstorming / Future Research
+### Roaming Vendor Coordinate Management (Live SEO)
+* **Problem**: Food carts and roaming pop-ups need live location tracking. 
+* **Constraint**: Needs a free backend with zero quotas. For the UI, we want to fetch the live location. For SEO, JSON-LD might need fixed locations or schedules based on a new "Vendor Type" classification (e.g. static vs roaming).
+* **Next Steps**: Brainstorm vendor classification logic and research scalable, free data-store mechanisms (like Cloudflare KV or Google Sheets API) for coordinate tracking.
